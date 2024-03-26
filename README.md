@@ -1,5 +1,7 @@
 # Cloudflare Workers Modules
 
+Written by Blaine Harper, for Indian Hills CC IT Dept.
+
 General modules that can be used for creating applications using Cloudflare Workers.  
 You can add them all at once, or piecemeal.  
 
