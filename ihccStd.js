@@ -1,10 +1,10 @@
 /**
- * cloudflareStd.ts
+ * ihccStd.ts
  * Module for creating general applications with Cloudflare Workers
  */
 
 // Generate a random number in range
-var getRandomInRange = (min, max) => {
+export function getRandomInRange(min, max){
     const randomBuffer = new Uint32Array(1)
     crypto.getRandomValues(randomBuffer)
   
@@ -13,10 +13,10 @@ var getRandomInRange = (min, max) => {
     min = Math.ceil(min)
     max = Math.floor(max)
     return Math.floor(randomNumber * (max - min + 1)) + min
-  }
+}
 
 //  Get a parameter's value by key
-const getParameterByName = (url, name) => {
+export function getParameterByName(url, name){
     name = name.replace(/[\[\]]/g, "\\$&");
     name = name.replace(/\//g, "/");
     const regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"), results = regex.exec(url);
@@ -31,16 +31,10 @@ const getParameterByName = (url, name) => {
 }
 
 // Generate a webpage using raw HTML
-const rawHtmlResponse = html => {
+export function rawHtmlResponse(html){
     return new Response(html, {
         headers: {
             "content-type": "text/html;charset=UTF-8"
         }
     });
-}
-
-module.exports = {
-    getRandomInRange: getRandomInRange,
-    getParameterByName: getParameterByName,
-    rawHtmlResponse: rawHtmlResponse,
 }
