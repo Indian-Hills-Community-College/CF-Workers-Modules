@@ -6,7 +6,7 @@ General modules that can be used for creating applications using Cloudflare Work
 
 To include a module in your Worker, copy the file or module contents into a new file within your Worker project in the same directory (or sub-directory) of your project.  
 
-Include the modules by adding `import { rawHtmlResponse } from './cloudflareStd';` to include specific functions.  
+Include the modules by adding `import { rawHtmlResponse } from './ihccStd';` to include specific functions.  
 
 ### Contents
 
