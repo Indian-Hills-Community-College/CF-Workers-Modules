@@ -10,5 +10,5 @@ Include the modules by adding `import { rawHtmlResponse } from './cloudflareStd'
 
 ### Contents
 
-- Cloudflare Standard | cloudflareStd.js
+- Cloudflare Standard | ihccStd.js
 - DOM Manipulation | DOM.js  
