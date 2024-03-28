@@ -3,11 +3,132 @@
  * Module for creating UI (Bootstrap 5) applications with Cloudflare Workers
  */
 
+class Form {
+    static getHtmlFromField = field => {
+        const field_outer = args => {
+            const _args = {...args}
+            const id = _args.id || 'page_form'
+            const content = _args.content || ''
+            return `<div class="mb-3" id="${id}">${content}</div>`
+        }
+
+    //  field defined in constructor
+        const field_types = {
+            'select': field => {
+                const id = field.id || ''
+                const key = field.key || ''
+                const label = field.label || ''
+            //  options = {
+            //      'key': 'value',
+            //      'user_id': 'User ID'
+            //  }
+                const options = field.options || []
+                let content = `<label class="border-0" id="${id}_label">${label}</label>
+                    <select id="${id}_field" name="${key}" class="form-control border" style="cursor:auto;box-sizing:border-box;height:40.5px" type="select">`
+                for(const {key, value} of options){
+                    const isActive = key == placeholder ? ' active' : ''
+                    content += `<option value="${key}"${isActive}>${value}</option>`
+                }
+                content += `</select>`
+                return field_outer({id: id, content: content})
+            },
+            'input': field => {
+                const id = field.id || ''
+                const key = field.key || ''
+                const input_type = field.input_type || ''
+                const label = field.label || ''
+                const placeholder = field.placeholder || ''
+                const content = `
+                        <label class="border-0" id="${id}_label">
+                            ${label}
+                        </label>
+                        <input id="${id}_field" name="${key}" value="${placeholder}" class="page_form_displayName form-control border" style="cursor:auto;box-sizing:border-box;height:40.5px" type="${input_type}">
+                    `
+                return field_outer({id: id, content: content})
+            },
+            'textarea': field => {
+                const id = field.id || ''
+                const key = field.key || ''
+                const label = field.label || ''
+                const placeholder = field.placeholder || ''
+                let content = `
+                    <label class="border-0" id="${id}_label">${label}</label>
+                    <textarea style="min-height:7.55rem;" rows="4" id="${id}_field" name="${key}" class="form-control border">${placeholder}</textarea>`
+                return field_outer({id: id, content: content})
+            },
+        }
+        return field_types[field.field_type]
+    }
+    constructor(args){
+        this._args = {...args}
+        this.form_html = ''
+        this.field_length = this._args.fields ? this._args.fields.length : 0
+        this.method = this._args.method || 'GET'
+        this.action = this._args.action || '#'
+    //  this.fields is an array of objects
+    //      { id, type, label, placeholder, options }
+        this.fields = this._args.fields || [] 
+        delete this._args
+    }
+    addField = field => {
+        return this.fields.push(field)
+    }
+    get html() {
+        let form_html = `<form id="${this.id} class="mx-auto col-lg-9 col-md-11" action="${this.action}" method="${this.method}">`
+        for(const each of this.fields)
+            form_html += getHtmlFromField(each)
+        return this.form_html = form_html + '</form>'
+    }
+}
+
+export function generatePageCode(args){
+    const _args = {...args}
+    const title = _args.title || 'Home'
+    const content = _args.content || 'No content to display...'
+    const text_center = _args.text_center ? 'text-center' : 'text-start'
+    const size = _args.size || { 
+        external: _args.size_ext || 'col-lg-6 col-11',
+        internal: _args.size_int || 'col-11',
+    }
+    const pageTypes = {
+        'basic':
+            `<div class="container my-5 py-3 ihcc-light-grey shadow-lg ihcc-left-bar ${size.external}">
+                <div>
+                    <div class="row">
+                        <div class="mx-auto">
+                            <div class="my-3 mx-auto ${size.internal}">
+                                <div class="fs-3 ${text_center}">${title}</div>
+                            </div>
+                            <hr>
+                            <div class="my-3 mx-auto ${size.internal}">
+                                <div class="${text_center}">${content}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            `,
+        'default':
+            `<div class="container my-5 py-3 ihcc-light-grey shadow-lg ihcc-left-bar ${size.external}">
+                <div>
+                    <div class="row">
+                        <div class="mx-auto">
+                            <div class="my-3 mx-auto ${size.internal}">
+                                <div class="${text_center}">${content}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            `
+    }
+    const type = _args.type && Object.keys(pageTypes).includes(_args.type) ? _args.type : 'default'
+    return pageTypes[type]
+}
+
 export function generateNavbar(args){
     const generateDropdown = (args) => {
-        const _args = {
-            ...args
-        }
+        const _args = {...args}
         const text = _args.text || ''
         const links = _args.links || []
         let responseHtml = `
@@ -22,9 +143,7 @@ export function generateNavbar(args){
         return responseHtml + `</ul>
             </li>`
     }
-    const _args = {
-        ...args
-    }
+    const _args = {...args}
     const brand = _args.brand || 'Bootstrap 5 Seed'
     const dropdowns = _args.nav || [{}]
     let dropDownHtml = ''
@@ -47,17 +166,14 @@ export function generateNavbar(args){
 
 // generate headcode for DOM
 export function generateHeadCode(args){
-    const _args = {
-        ...args
-    }
+    const _args = {...args}
     const title = _args.title || 'Home'
-    const navbar = _args.navbar || {}
     return `
 <!DOCTYPE html>
 <html lang="en" data-bs-theme="dark">
 <head>
     <meta charset="utf8" />
-    <title>WT Portal | ${title}</title>
+    <title>${title}</title>
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <link rel="icon" type="image/x-icon" href="https://indianhills.edu/favicon.ico">
 
@@ -72,28 +188,36 @@ export function generateHeadCode(args){
 <head>
 <body>
     <div id='mainBody'>
-        ${generateNavbar(navbar)}
         `
 }
 
 export function generateFootcode(args){
-    const _args = {
-        ...args
-    }
-    const copyright = _args.copyright || 'Default Worker Seed'
-    let footCode = `
+    const _args = {...args}
+    const copyright = _args.copyright ? `<span id="footerText">${new Date().getFullYear()} © ${_args.copyright}</span>` : 'Default Worker Seed'
+    return `
         <div class="mx-auto">
             <div id="footer_motto" class="mx-auto ihcc-left-bar p-3 shadow-lg ihcc-sand bg-gradient text-center panel rounded-0" style="width:15%; min-width:10rem; margin-bottom:7.5rem;">
                 <i>Life. Changing.</i>
             </div>
         </div>
     </div>
-    <footer id="mainFooter" class="border shadow-lg p-2 text-center text-muted ihcc-light-grey bg-gradient mx-auto sticky-footer">`
-if(_args.copyright)
-    footCode += `<span id="footerText">${new Date().getFullYear()} © ${copyright}</span>`
-return footCode + `
-        </footer>	
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+    <footer id="mainFooter" class="mx-auto shadow-lg p-2 text-center ihcc-light-grey bg-gradient sticky-footer">
+        ${copyright}
+    </footer>	
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
     </body>
 </html>`
+}
+
+export function generateFullPage(args){
+    const _args = {...args}
+    const title = _args.title || {}
+    const navbar = _args.navbar || {}
+    const pageCode = _args.pageCode || {}
+    const copyright = _args.copyright || {}
+    const responseHtml = generateHeadCode({ title: title }) +
+        generateNavbar(navbar) +
+        generatePageCode(pageCode) +
+        generateFootcode({ copyright: copyright })
+    return responseHtml
 }
