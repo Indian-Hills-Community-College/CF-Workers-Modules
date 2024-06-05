@@ -7,7 +7,7 @@ String.prototype.capitalizeFirstChar = function () {
     return this.charAt(0).toUpperCase() + this.slice(1)
 }
 
-class HtmlElement {
+export class HtmlElement {
     constructor(args) {
         this.tag = args.tag || ''
         this.attributes = args.attributes || {}
@@ -65,7 +65,7 @@ class HtmlElement {
     }
 }
 
-class FormInput extends HtmlElement {
+export class FormInput extends HtmlElement {
     static fieldWrapper = args => {
         const _args = { ...args }
         const id = _args.id || 'page_form'
@@ -140,7 +140,7 @@ class FormInput extends HtmlElement {
     }
 }
 
-class Form extends HtmlElement {
+export class Form extends HtmlElement {
     static getHtmlFromField = field => {
         const field_outer = args => {
             const _args = { ...args }
@@ -219,7 +219,7 @@ class Form extends HtmlElement {
     }
 }
 
-class Page extends HtmlElement {
+export class Page extends HtmlElement {
     static headerDef = ''
     static footerDef = ''
     static setDefs(args) {
@@ -323,4 +323,3 @@ const _footerDef = `<div class="mx-auto">
 
 Page.setDefs({ header: _headerDef, footer: _footerDef })
 const page = new Page({ title: 'test' })
-console.log(page.render())
