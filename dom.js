@@ -7,46 +7,23 @@ String.prototype.capitalizeFirstChar = function () {
     return this.charAt(0).toUpperCase() + this.slice(1)
 }
 
-export function generateNavbar(args) {
-    const generateDropdown = (args) => {
-        const _args = { ...args }
-        const text = _args.text || ''
-        const links = _args.links || []
-        let responseHtml = `
-      <li class="nav-item dropdown">
-        <a id="navbar_dropdown_item" class="nav-link" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">${text}</a>
-        <ul class="dropdown-menu border shadow-lg">`
-        for (const each of links)
-            if (each.text == 'hr')
-                responseHtml += `<hr style="color:#533; margin:0; padding:0;">`
-            else
-                responseHtml += `<li><a class="dropdown-item" target="${each.target || '_self'}" href="${each.link || '#'}">${each.text || ''}</a></li>`
-        return responseHtml + `</ul>
-            </li>`
-    }
-    const _args = { ...args }
-    const brand = _args.brand || 'Bootstrap 5 Seed'
-    const dropdowns = _args.nav || [{}]
-    let dropDownHtml = ''
-    for (const each of dropdowns)
-        dropDownHtml += generateDropdown(each)
-    return `
-    <nav class="navbar navbar-expand-lg bg-primary bg-gradient sticky-top shadow-lg">
-      <div class="col-10 container-fluid">
-        <button class="my-1 navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation"><i class="fa-solid fa-bars"></i></button>
-        <div class="collapse navbar-collapse" id="navbarSupportedContent">
-          <a id="navbar_banner_button" class="fs-5 navbar-brand hide-on-shrink" href="/">${brand}</a>
-          <ul class="navbar-nav ms-auto">
-            ${dropDownHtml}
-          </ul>
-        </div>
-      </div>
-    </nav>
-    `
-}
-
 export class HtmlElement {
+    static defaults = {}
+    static defaultKeysAllowed = ['header', 'footer']
+    static setup = (setup) => {
+        if (setup.defaults) {
+            setDefts(setup.defaults)
+        }
+    }
+    static setDefs = (setDefaults) => {
+        for (const [key, value] of Object.entries(setDefaults)) {
+            if (StdObject.defaultKeysAllowed.includes(key)) {
+                StdObject.defaults[key] = value
+            }
+        }
+    }
     constructor(args) {
+        super(args)
         this.tag = args.tag || ''
         this.attributes = args.attributes || {}
         this.content = args.content || ''
@@ -93,9 +70,8 @@ export class HtmlElement {
     }
     renderChildren() {
         let output = ''
-        for (const each of this._children) {
-            output += each
-        }
+        for (const each of this.children)
+            output += ` ${each.render()} `
         return output
     }
     render() {
@@ -179,61 +155,6 @@ export class FormInput extends HtmlElement {
 }
 
 export class Form extends HtmlElement {
-    static getHtmlFromField = field => {
-        const field_outer = args => {
-            const _args = { ...args }
-            const id = _args.id || 'page_form'
-            const content = _args.content || ''
-            return `<div class="mb-3" id="${id}">${content}</div>`
-        }
-
-        //  field defined in constructor
-        const field_types = {
-            'select': field => {
-                const id = field.id || ''
-                const key = field.key || ''
-                const label = field.label || ''
-                //  options = {
-                //      'key': 'value',
-                //      'user_id': 'User ID'
-                //  }
-                const options = field.options || []
-                let content = `<label class="border-0" id="${id}_label">${label}</label>
-                    <select id="${id}_field" name="${key}" class="form-control border" style="cursor:auto;box-sizing:border-box;height:40.5px" type="select">`
-                for (const { key, value } of options) {
-                    const isActive = key == placeholder ? ' active' : ''
-                    content += `<option value="${key}"${isActive}>${value}</option>`
-                }
-                content += `</select>`
-                return field_outer({ id: id, content: content })
-            },
-            'input': field => {
-                const id = field.id || ''
-                const key = field.key || ''
-                const input_type = field.input_type || ''
-                const label = field.label || ''
-                const placeholder = field.placeholder || ''
-                const content = `
-                        <label class="border-0" id="${id}_label">
-                            ${label}
-                        </label>
-                        <input id="${id}_field" name="${key}" value="${placeholder}" class="page_form_displayName form-control border" style="cursor:auto;box-sizing:border-box;height:40.5px" type="${input_type}">
-                    `
-                return field_outer({ id: id, content: content })
-            },
-            'textarea': field => {
-                const id = field.id || ''
-                const key = field.key || ''
-                const label = field.label || ''
-                const placeholder = field.placeholder || ''
-                let content = `
-                    <label class="border-0" id="${id}_label">${label}</label>
-                    <textarea style="min-height:7.55rem;" rows="4" id="${id}_field" name="${key}" class="form-control border">${placeholder}</textarea>`
-                return field_outer({ id: id, content: content })
-            },
-        }
-        return field_types[field.field_type]
-    }
     constructor(args) {
         super(args)
         this._args = { ...args }
@@ -249,51 +170,43 @@ export class Form extends HtmlElement {
     addField = field => {
         return this.fields.push(field)
     }
-    get html() {
+    render() {
         let form_html = `<form id="${this.id} class="mx-auto col-lg-9 col-md-11" action="${this.action}" method="${this.method}">`
         for (const each of this.fields)
-            form_html += getHtmlFromField(each)
+            form_html += new FormInput(each)
         return this.form_html = form_html + '</form>'
     }
 }
 
 export class Page extends HtmlElement {
-    static headerDef = ''
-    static footerDef = ''
-    static setDefs(args) {
-        if (args.header)
-            Page.setHeaderDef(args.header)
-        if (args.footer)
-            Page.setFooterDef(args.footer)
-    }
-    static setHeaderDef(_headerDef) {
-        Page.headerDef = _headerDef
-    }
-    static setFooterDef(_footerDef) {
-        Page.footerDef = _footerDef
-    }
     constructor(args) {
         super(args)
-        this.header = args.title || ''
-        this.navbar = args.navbar || [{}]
-        this.body = args.body || ''
-        this.footer = args.footer || Page.footerDef
+        this.siteTitle = args.siteTitle.capitalizeFirstChar() || Page.defaults.siteTitle || 'Default'
+        this.pageTitle = args.pageTitle.capitalizeFirstChar() || Page.defaults.pageTitle || 'Page'
+        this.header = { headerTitle: `${this.siteTitle} | ${this.pageTitle}`, headerOverwrite: args.headerOverwrite || null }
+        this.brand = this.siteTitle
+        this.navbar = args.navbar || Page.defaults.navbar || [{}]
+        this.body = args.body || Page.defaults.body || 'Bootstrap 5 Starter'
+        this.footer = args.footer || Page.defaults.footer || ''
         this.parent = args.parent || {}
         this.children = args.children || []
         this.tag = 'html'
     }
-    set header(title) {
-        this._header = `
-<!DOCTYPE html>
-<html>
-    <head>
-        <meta charset="utf8" />
-        <title>${title}</title>
-        ${Page.headerDef}
-    </head>`
+    set header(args) {
+        this._headerTitle = args.headerTitle
+        if (args.headerOverwrite)
+            this._headerOverwrite = args.headerOverwrite
     }
     get header() {
-        return this._header
+        return `
+        <!DOCTYPE html>
+        <html>
+            <head>
+                <meta charset="utf8" />
+                <title>${this._headerTitle}</title>
+                <style>${this.style}</style>
+                ${this._headerOverwrite || Page.defaults.header}
+            </head>`
     }
     set navbar(navbar) {
         this._navbar = navbar
@@ -315,7 +228,7 @@ export class Page extends HtmlElement {
             return responseHtml + `</ul>
         </li>`
         }
-        const brand = this.title || 'Bootstrap 5 Seed'
+        const brand = this.brand
         const dropdowns = this._navbar || [{}]
         let dropDownHtml = ''
         for (const each of dropdowns)
@@ -361,8 +274,6 @@ export class Page extends HtmlElement {
  </html>`
     }
     render() {
-        const render = this.header + this.navbar + this.body + this.footer
-        console.log(render)
-        return render
+        return this.header + this.navbar + this.body + this.footer
     }
 }
