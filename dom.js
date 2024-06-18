@@ -217,7 +217,7 @@ export class Modal extends HtmlElement {
         this.body = args.body
         this.footer = args.footer || args.buttons || `
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="${this.id}">Close</button>
-                    <button type="button" class="btn btn-primary">Save</button>
+                    <button type="button" class="btn poh-primary">Save</button>
         `
         this.trigger = {
             style: args.trigger ? args.trigger.style : 'primary',
@@ -247,7 +247,7 @@ export class Modal extends HtmlElement {
     }
     get trigger() {
         return `
-        <button type="button" class="btn btn-${this._trigger.style}" data-bs-toggle="modal" data-bs-target="#${this.id}">
+        <button type="button" class="btn poh-${this._trigger.style}" data-bs-toggle="modal" data-bs-target="#${this.id}">
             ${this.trigger.text}
         </button>
         `
