@@ -209,6 +209,72 @@ export class Form extends HtmlElement {
     }
 }
 
+export class Modal extends HtmlElement {
+    constructor(args) {
+        super(args)
+        this.id = args.id
+        this.title = args.title
+        this.body = args.body
+        this.footer = args.footer || args.buttons || `
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="${this.id}">Close</button>
+                    <button type="button" class="btn btn-primary">Save</button>
+        `
+        this.trigger = {
+            style: args.trigger ? args.trigger.style : 'primary',
+            text: args.trigger ? args.trigger.text : 'Trigger Modal'
+        }
+    }
+    set title(title) {
+        this._title = title.trim().capitalizeFirstChar()
+    }
+    get title() {
+        return this._title
+    }
+    set body(body) {
+        this.body = body.trim().capitalizeFirstChar()
+    }
+    get body() {
+        return this._body
+    }
+    set footer(footer) {
+        this._footer = footer
+    }
+    get footer() {
+        return this._footer
+    }
+    set trigger(trigger) {
+        this._trigger = trigger
+    }
+    get trigger() {
+        return `
+        <button type="button" class="btn btn-${this._trigger.style}" data-bs-toggle="modal" data-bs-target="#${this.id}">
+            ${this.trigger.text}
+        </button>
+        `
+    }
+    render() {
+        return `
+        ${this.trigger}
+        <div id="${this.id}" class="modal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">${this.title}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="${this.id}" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>${this.body}</p>
+                </div>
+                <div class="modal-footer">
+                    ${this.footer}
+                </div>
+                </div>
+            </div>
+        </div>
+        `
+    }
+}
+
 export class Page extends Defaults {
     constructor(args) {
         super(args)
